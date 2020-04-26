@@ -2,6 +2,7 @@ package com.example.testingweb;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ public class SmokeTest {
 	private HomeController controller;
 
 	@Test
+	@Tag("smoke")
 	public void contexLoads() throws Exception {
 		assertThat(controller).isNotNull();
 	}
