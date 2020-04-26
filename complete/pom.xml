@@ -45,7 +45,7 @@
 				<version>3.0.0-M3</version>
 				<configuration>
 					<!-- include tags -->
-					<groups>smoke, integration, unit, web-mock, web-layer</groups>
+					<!--<groups>smoke, integration, unit, web-mock, web-layer</groups>-->
 				</configuration>
 			</plugin>
 			<plugin>
