@@ -43,10 +43,6 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.0.0-M3</version>
-				<configuration>
-					<!-- include tags -->
-					<!--<groups>smoke, integration, unit, web-mock, web-layer</groups>-->
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
