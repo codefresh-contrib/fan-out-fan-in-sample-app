@@ -1,0 +1,129 @@
+version: '1.0'
+mode: parallel
+stages:
+- setup
+- start
+- web-tests
+- smoke
+- end
+steps:
+  Clone: 
+    title: Cloning main repository...
+    stage: setup
+    type: git-clone
+    arguments:
+      repo: codefresh-contrib/fan-out-fan-in-sample-app
+      git: github
+      revision: master
+  Build_image:
+    title: Building Docker Image...
+    type: build
+    stage: setup
+    working_directory: ${{Clone}}
+    arguments:
+      image_name: spring-backend
+      tag: latest
+      dockerfile: Dockerfile 
+      when:
+        steps:
+        - name: Clone
+          on:
+          - success 
+  Step1:
+    title: Running unit tests...
+    stage: start
+    working_directory: ${{Clone}}/complete
+    arguments:
+      image: maven:3.5.2-jdk-8-alpine
+      commands:
+        - mvn -Dmaven.repo.local=/codefresh/volume/m2_repository -Dgroups="unit" test
+      when:
+        steps:
+        - name: Build_image
+          on:
+          - success
+    services:
+      composition:
+        spring_backend:
+          image: ${{Build_image}}
+          ports:
+            - 8080
+  Step2:
+    title: Running web mock test...
+    stage: web-tests
+    working_directory: ${{Clone}}/complete
+    arguments:
+      image: maven:3.5.2-jdk-8-alpine
+      commands:
+        - mvn -Dmaven.repo.local=/codefresh/volume/m2_repository -Dgroups="web-mock" test
+      when:
+            steps:
+            - name: Step1
+              on:
+              - success
+      services:
+          composition:
+            spring_backend:
+              image: ${{Build_image}}
+              ports:
+                - 8080
+  Step3:
+    title: Running smoke test...
+    stage: smoke
+    working_directory: ${{Clone}}/complete
+    arguments:
+      image: maven:3.5.2-jdk-8-alpine
+      commands:
+        - mvn -Dmaven.repo.local=/codefresh/volume/m2_repository -Dgroups="smoke" test
+      when:
+        steps:
+          - name: Step2
+            on:
+            - success
+      services:
+          composition:
+            spring_backend:
+              image: ${{Build_image}}
+              ports:
+                - 8080           
+  Step4:
+    title: Running web layer tests...
+    stage: web-tests
+    working_directory: ${{Clone}}/complete
+    arguments:
+      image: maven:3.5.2-jdk-8-alpine
+      commands:
+        - mvn -Dmaven.repo.local=/codefresh/volume/m2_repository -Dgroups="web-layer" test
+      when:
+        steps:
+          - name: Step1
+            on:
+            - success
+      services:
+          composition:
+            spring_backend:
+              image: ${{Build_image}}
+              ports:
+                - 8080
+  Step5:
+    title: Running integration tests...
+    stage: end
+    working_directory: ${{Clone}}/complete
+    arguments:
+      image: maven:3.5.2-jdk-8-alpine
+      commands:
+        - mvn -Dmaven.repo.local=/codefresh/volume/m2_repository -Dgroups="integration" test
+      when:
+        steps:
+          - name: Step3
+            on:
+            - success
+          - name: Step4
+            on:
+            - success
+      services:
+          composition:
+            spring_backend:
+              image: ${{Build_image}}
+              ports:
+                - 8080
